@@ -168,7 +168,7 @@ int main()
             gameOver = false;
             leftScore = 0;
             rightScore = 0;
-            printf("MATCH START! lolololol\n");
+            printf("MATCH START! lololol\n");
         }
 
         if((leftScore>=5 || rightScore>=5) && gameOver == false)
