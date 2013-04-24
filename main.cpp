@@ -6,6 +6,7 @@
 #include <ctime>
 #include <stdio.h>
 #include <string>
+#include <cstdlib>
 
 
 enum PaddleSide { TOP_BOTTOM, LEFT_RIGHT, NONE };
@@ -33,6 +34,8 @@ float currentTime;
 float lastTime;
 bool gameOver;
 float timeToReset;
+float scorePauseTime;
+bool scorePause;
 
 PaddleSide inBounds(float x, float y, float left, float right, float top, float bottom)
 {
@@ -116,11 +119,11 @@ int main()
     printf("Enter X Speed:"); std::cin >> ball.xspd;
     printf("Enter Y Speed:"); std::cin >> ball.yspd;
 
-
+    //Paddle collision boxes
     left.x=-0.95f; left.y=0;    left.sizeX = 0.10f; left.sizeY = 0.40f;
     right.x=0.85f; right.y=0;   right.sizeX = 0.10f; right.sizeY = 0.40f;
 
-    lastTime =0;
+    lastTime = 0;
     currentTime = (float)glfwGetTime();
 
     //Post GLFW stuff.
@@ -142,6 +145,7 @@ int main()
         lastTime = currentTime;
         currentTime = (float)glfwGetTime();
         deltaTime = (float)currentTime - (float)lastTime;
+
         //Setup stuff here.
         glfwGetWindowSize( &width, &height );
         height = height > 0 ? height : 1;
@@ -164,11 +168,15 @@ int main()
 
         if(currentTime > timeToReset && gameOver == true)
         {
-
             gameOver = false;
             leftScore = 0;
             rightScore = 0;
             printf("MATCH START! lololol\n");
+        }
+
+        if(currentTime > scorePauseTime && scorePause == true)
+        {
+            scorePause = false;
         }
 
         if((leftScore>=5 || rightScore>=5) && gameOver == false)
@@ -183,14 +191,15 @@ int main()
         //Update Ball
         ball.oldX = ball.x;
         ball.oldY = ball.y;
-        if(gameOver == false)
+        if(gameOver == false && scorePause == false)
         {
             ball.x += ball.xspd*(float)deltaTime;
             ball.y += ball.yspd*(float)deltaTime;
         }
 
-        if(ball.x>1) { ball.x=0; ball.y=0; leftScore++;  ball.xspd = -ball.xspd;}
-        if(ball.x<-1){ ball.x=0; ball.y=0; rightScore++; ball.xspd = -ball.xspd;}
+        //Ball scoring and ball reset
+        if(ball.x>1) { ball.x=0; ball.y=0; leftScore++;  ball.xspd = (int)(rand() % 100 + 1 >= 50)?-1:1 *ball.xspd; scorePause = true; scorePauseTime = currentTime + 2;}
+        if(ball.x<-1){ ball.x=0; ball.y=0; rightScore++; ball.xspd = (int)(rand() % 100 + 1 >= 50)?-1:1 *ball.xspd; scorePause = true; scorePauseTime = currentTime + 2;}
 
                 if(ball.y >= 1 || ball.y <= -1) { ball.yspd = -ball.yspd; ball.y = ball.oldY; }
 
@@ -243,8 +252,8 @@ int main()
         if(glfwGetKey(GLFW_KEY_DOWN)) right.y-=0.75f*deltaTime;
         if(glfwGetKey(GLFW_KEY_UP))   right.y+=0.75f*deltaTime;
 
-        if(left.y-left.sizeY/2 < ball.y && ball.x < 0.10f) left.y += 0.5f*deltaTime;
-        if(left.y-left.sizeY/2 > ball.y && ball.x < 0.10f) left.y -= 0.5f*deltaTime;
+        if(left.y-left.sizeY/2 < ball.y && ball.x < 0.20f) left.y += 0.75f*deltaTime;
+        if(left.y-left.sizeY/2 > ball.y && ball.x < 0.20f) left.y -= 0.75f*deltaTime;
 
         //Draw Paddles
         glBegin( GL_QUADS );
@@ -270,6 +279,3 @@ int main()
 
     return 0;
 }
-
-
-
